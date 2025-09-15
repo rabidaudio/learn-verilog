@@ -1,3 +1,21 @@
+Verification: slang, svlint
+Language server: svls
+Simulation: iverilog -g2012 
+Viewing: scansion
+Synth: yosys
+
+other:
+verilator
+
+
+brew install icarus-verilog svlint svls yosis
+wget https://web.archive.org/web/20200814033018/http://www.logicpoet.com/releases/scansion/Scansion_1.12.dmg
+
+brew install --HEAD randomplum/gtkwave/gtkwave
+
+
+-----
+
 # Some SystemVerilog examples
 
 This repo contains a few example SystemVerilog projects that can be loaded onto the Lattice iCE40 FPGA. These files are a great starting point for small - medium sized projects.
