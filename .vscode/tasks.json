@@ -1,0 +1,15 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Run examples",
+            "type": "shell",
+            "command": "find exercises -iname 'top.sv' | while read line; do dir=$(echo $line | sed 's/\\/top\\.sv$//'); cd $dir; iverilog -g2012 -o test.vvp tb.sv; ./test.vvp; cd ../..; done",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ]
+}
