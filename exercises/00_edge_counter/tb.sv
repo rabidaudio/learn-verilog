@@ -57,17 +57,22 @@ module tb;
     // "scoreboard" task that checks the actual dut value vs the expected value
     // We need to delay the expected values by 1 cycle.
     int gpc_prev, npc_prev;
-    always @(posedge clk) begin
-        gpc_prev <= golden_posedge_count;
-        npc_prev <= golden_negedge_count;
+    initial begin
+        @(posedge clk);
+        forever begin
+            @(posedge clk);
+            gpc_prev <= golden_posedge_count;
+            npc_prev <= golden_negedge_count;
 
-        if ((gpc_prev !== posedge_count) || (npc_prev !== negedge_count)) begin
-            if (!error) begin
-                $display("test failed at time %t.", $time);
-                $display("Expected counts %4d and %4d. Got counts %4d and %4d",
-                    gpc_prev, npc_prev, posedge_count, negedge_count);
+            #(PERIOD/10);
+            if ((gpc_prev !== posedge_count) || (npc_prev !== negedge_count)) begin
+                if (!error) begin
+                    $display("test failed at time %t.", $time);
+                    $display("Expected counts %4d and %4d. Got counts %4d and %4d",
+                        gpc_prev, npc_prev, posedge_count, negedge_count);
+                end
+                error <= 1;
             end
-            error <= 1;
         end
     end
 
