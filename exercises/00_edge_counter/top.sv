@@ -35,5 +35,22 @@ module edge_counter #(
     output logic [WIDTH-1:0] posedge_count,
     output logic [WIDTH-1:0] negedge_count
 );
+    logic prev;
+
+    always_ff @(posedge clk)
+        if (reset) begin
+            posedge_count <= 0;
+            negedge_count <= 0;
+            prev <= signal;
+        end else begin
+            posedge_count <= posedge_count;
+            negedge_count <= negedge_count;
+
+            if (prev != signal) begin
+                if (signal) posedge_count <= posedge_count + 1;
+                else negedge_count <= negedge_count + 1;
+            end
+            prev <= signal;
+        end
 
 endmodule
