@@ -33,40 +33,30 @@ module edge_counter #(
     logic prev_signal;
     logic [WIDTH-1:0] prev_pcount;
     logic [WIDTH-1:0] prev_ncount;
-    
-    always_comb begin
+
+    always_ff @(posedge clk)
         if (reset) begin
-            posedge_count = 0;
-            negedge_count = 0;
+            prev_pcount <= 0;
+            prev_ncount <= 0;
+            prev_signal <= signal;
+        end else begin
+            prev_pcount <= posedge_count;
+            prev_ncount <= negedge_count;
+
+            prev_signal <= signal;
         end
 
-        prev_pcount = posedge_count;
-        prev_ncount = negedge_count;
-
+    always_comb begin
+        posedge_count = prev_pcount;
+        negedge_count = prev_ncount;
         if (prev_signal != signal) begin
             if (signal) posedge_count = prev_pcount + 1;
             else negedge_count = prev_ncount + 1;
         end
-        prev_signal = signal;
+        if (reset) begin
+            posedge_count = 0;
+            negedge_count = 0;
+        end
     end
-
-    // always_comb begin
-    //     if (reset) begin
-    //         posedge_count = 0;
-    //         negedge_count = 0;
-    //         previous_posedge_count = 0;
-    //         previous_negedge_count = 0;
-    //         prev = signal;
-    //     end else begin
-    //         posedge_count = posedge_count;
-    //         negedge_count = negedge_count;
-
-    //         if (prev != signal) begin
-    //             if (signal) posedge_count = posedge_count + 1;
-    //             else negedge_count = negedge_count + 1;
-    //         end
-    //         prev = signal;
-    //     end
-    // end
 
 endmodule
