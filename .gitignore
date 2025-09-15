@@ -3,3 +3,5 @@
 *.vvp
 
 exercises/solutions
+
+.DS_Store

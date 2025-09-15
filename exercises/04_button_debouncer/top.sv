@@ -25,8 +25,44 @@ module button_debouncer (
     // what should the minimum pulse width be?
     input [15:0] min_pulse_width,
 
-    // How many positive and negative edges have we counted since the last reset?
+    // a stable version of signal
     output logic debounced_signal
 );
+
+    logic prev;
+    // must count up since min_pulse_width can change at any time
+    logic [15:0] bounce_timer;
+
+    // _----__-_-_-_----___
+    // _----__----------___
+
+    always_ff @(posedge clk)
+        if (reset) begin
+            bounce_timer <= ~0;
+            debounced_signal <= 0;
+            prev <= 0;
+        end else begin
+            prev <= signal;
+            if (prev != signal) begin
+                // change
+                if (bounce_timer >= min_pulse_width) begin
+                    // start of a new pulse
+                    debounced_signal <= signal;
+                    bounce_timer <= 0;
+                end else begin
+                    // bouncing, reset timer
+                    bounce_timer <= 0;
+                    debounced_signal <= debounced_signal;
+                end
+            end else begin
+                // no change
+                debounced_signal <= debounced_signal;
+
+                // use max value as an indicator that the timer is maxxed
+                // i.e. that the signal has been stable for a long time
+                if (bounce_timer == ~0) bounce_timer <= ~0;
+                else bounce_timer <= bounce_timer + 1;
+            end
+        end
 
 endmodule

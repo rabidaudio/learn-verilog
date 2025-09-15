@@ -23,4 +23,23 @@ module pulse_width_detector (
     output logic [15:0] pulse_width
 );
 
+    logic [15:0] buffer;
+
+    always_ff @( posedge clk )
+        if (reset) begin
+            buffer <= 0;
+            pulse_width <= 0;
+            output_valid <= 0;
+        end else begin
+            buffer <= buffer;
+            pulse_width <= pulse_width;
+            output_valid <= 0;
+            if (signal) buffer <= buffer + 1;
+            else if (buffer > 0) begin
+                output_valid <= 1;
+                pulse_width <= buffer;
+                buffer <= 0;
+            end
+        end
+
 endmodule

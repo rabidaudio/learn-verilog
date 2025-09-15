@@ -22,4 +22,6 @@ module parameterizable_multiplexer #(
     output logic [7:0] dout
 );
 
+    always_comb dout = din[addr];
+
 endmodule
