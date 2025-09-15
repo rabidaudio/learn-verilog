@@ -1,0 +1,1 @@
+The iCE40 has some "hardened ip" blocks in it. Unlike the bulk of the FPGA, which is reprogrammable, these are little chunks of predetermined hardware. The `00 hardip` folder has some examples showing how to instantiate useful pieces of hard ip.

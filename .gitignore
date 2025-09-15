@@ -1,0 +1,5 @@
+# iverilog output files
+*.vcd
+*.vvp
+
+exercises/solutions
