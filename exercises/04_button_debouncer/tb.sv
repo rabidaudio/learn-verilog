@@ -19,14 +19,11 @@ module tb;
 
     ////////////////////////////////////////////////////////////////
     // main entry point for testbench execution
-    int golden_posedge_count, golden_negedge_count, error = 0;
+    logic golden_signal, error = 0;
     initial begin
         $dumpfile("dump.vcd");
         $dumpvars(0, tb);
         $timeformat(-9, 2, " ns", 20);
-
-        $display("Sorry, I'm getting a little tired of writing all these testbenches.");
-        $display("You'll just have to inspect dump.vcd by hand for correctness on this one.");
 
         reset <= 1;
         signal <= 0;
@@ -37,17 +34,32 @@ module tb;
         for (int i = 0; i < 100; i++) begin
             // bouncy portion
             int num_bounces, bounce_len;
+
+            golden_signal = ~signal;
             num_bounces = 2 * $urandom_range(10, 0) + 1;
             for (int j = 0; j < num_bounces; j++) begin
                 bounce_len = $urandom_range(20, 1);
                 signal <= ~signal;
+
+                if (j > 1 && golden_signal != debounced_signal) begin
+                    $error("test failed [%d, %d]. Expected %d but was %d", i, j, golden_signal, debounced_signal);
+                    error = 1;
+                end
+
                 repeat(bounce_len) @(posedge clk);
             end
 
-            repeat(MIN_PULSE_WIDTH * 4) @(posedge clk);
+            repeat(MIN_PULSE_WIDTH * 4) begin
+                @(posedge clk);
+                if (golden_signal != debounced_signal) begin
+                    $error("test failed. Expected %d but was %d", golden_signal, debounced_signal);
+                    error = 1;
+                end
+            end
         end
         repeat(MIN_PULSE_WIDTH * 4) @(posedge clk);
 
+        if (!error) $display("test passed!");
         $finish;
     end
 endmodule
