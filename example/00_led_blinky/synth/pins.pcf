@@ -1,0 +1,5 @@
+# TODO: write a blurb about what this file is.
+set_io clk 20
+set_io led 27
+
+set_frequency clk 12
