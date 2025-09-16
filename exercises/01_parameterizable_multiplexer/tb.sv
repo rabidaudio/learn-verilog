@@ -18,7 +18,7 @@ module tb;
         $dumpvars(0, tb);
         $timeformat(-9, 2, " ns", 20);
 
-        din = '{1, 2, 3, 4, 5, 6, 7, 8};
+        for (int j = 0; j < 8; j++) din[j] = j + 1;
 
         for (int i = 0; i < 100; i++) begin
             addr <= $urandom;
