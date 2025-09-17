@@ -84,7 +84,7 @@ module PWMGenerator_Test50 (
     localparam DUTY = 4;
 
     logic t_pwm;
-    // logic t_period_end;
+    logic t_period_end;
 
     PWMGenerator #(
         .INITIAL_PERIOD(PERIOD),
@@ -93,7 +93,7 @@ module PWMGenerator_Test50 (
         .clk(t_clk),
         .reset(t_reset),
         .update_parameters('0),
-        // .period_end(t_period_end),
+        .period_end(t_period_end),
         .pwm(t_pwm)
     );
 
@@ -104,16 +104,16 @@ module PWMGenerator_Test50 (
     );
 
     // assert that period_end goes high once at the end of each period
-    // logic g_period_end;
-    // ConstantPWM #(.PERIOD(PERIOD), .DUTY(1)) start_reference (
-    //     .t_clk(t_clk), .reset(t_reset), .pwm(g_period_end)
-    // );
-    // GoldenMonitor #(.DELAY(PERIOD+1)) gm_p_end(
-    //     .clk(t_clk),
-    //     .enable('1),
-    //     .golden(g_period_end),
-    //     .signal(t_period_end)
-    // );
+    logic g_period_end;
+    ConstantPWM #(.PERIOD(PERIOD), .DUTY(1)) start_reference (
+        .t_clk(t_clk), .reset(t_reset), .pwm(g_period_end)
+    );
+    GoldenMonitor #(.DELAY(PERIOD+1)) gm_p_end(
+        .clk(t_clk),
+        .enable('1),
+        .golden(g_period_end),
+        .signal(t_period_end)
+    );
 endmodule
 
 // module PWMGenerator_TestSweep (

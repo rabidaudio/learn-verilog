@@ -24,7 +24,7 @@ module PWMGenerator #(
     input [WIDTH:0] pwm_duty_cycle,
 
     // pulled high on the last cycle of a period
-    // output logic period_end
+    output logic period_end,
 
     // output signal
     // TODO: use PRS generator instead:
@@ -56,7 +56,7 @@ module PWMGenerator #(
 
             period_counter <= period_counter == 0 ? (next_period-1) : period_counter - 1;
 
-            // period_end <= (period_counter == 0);
+            period_end <= (period_counter == 0);
 
             if (period_counter == 0)
                 // allow immediate update on the first clock of the period
