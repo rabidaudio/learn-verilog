@@ -11,7 +11,7 @@ module GoldenMonitor #(
     // how many clock cycles to delay golden to match signal
     parameter DELAY=0,
     // a number of clock cycles to compare for
-    parameter UNTIL=(1 << 64)
+    parameter UNTIL='1
 ) (
     input clk,
     input enable,
@@ -25,16 +25,16 @@ module GoldenMonitor #(
         logic [(WIDTH-1):0] compare;
 
         for (int i = 0; i < DELAY; i++) begin
-            @(posedge clk);
             delay_line.push_front(golden);
+            @(posedge clk);
         end
         
         for (int i = 0; i < UNTIL; i++) begin
-            compare = delay_line.pop_back();
-            @(posedge clk);
             delay_line.push_front(golden);
+            compare = delay_line.pop_back();
             if (enable && signal != compare)
                 $error("monitor failed. expected %h but was %h", compare, signal);
+            @(posedge clk);
         end
     end
 endmodule

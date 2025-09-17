@@ -42,8 +42,6 @@ module PWMGenerator #(
     // counts down to zero to track high portion of period
     logic [WIDTH-1:0] high_counter;
 
-    // for (i=0;i<4;i++) 0,1,2,3
-    // for (i=4)
     always_ff @(posedge clk) begin
         if (reset) begin
             next_period <= (1 << (WIDTH-1)); // half width
@@ -51,25 +49,35 @@ module PWMGenerator #(
             period_counter <= 0;
             high_counter <= 0;
         end else begin
-            if (update_parameters) begin
-                next_period <= pwm_period;
-                if (pwm_duty_cycle > pwm_period) next_duty_cycle <= pwm_period;
-                else next_duty_cycle <= pwm_duty_cycle;
-            end
-
-            if (period_counter == 0) begin
-                // start a new cycle
-                period_counter <= next_period - 1; // count current cycle
-                high_counter <= next_duty_cycle;
-                period_start <= 1;
-            end else begin
-                period_counter <= period_counter - 1;
-                if (high_counter > 0) begin
-                    high_counter <= high_counter - 1;
-                end
-                pwm <= (high_counter > 0);
-                period_start <= 0;
-            end
+            if (period_counter == 0) period_counter <= next_period-1;
+            else period_counter <= period_counter - 1;
         end
+
+        // if (reset) begin
+        //     next_period <= (1 << (WIDTH-1)); // half width
+        //     next_duty_cycle <= 0;
+        //     period_counter <= 0;
+        //     high_counter <= 0;
+        // end else begin
+        //     if (update_parameters) begin
+        //         next_period <= pwm_period;
+        //         if (pwm_duty_cycle > pwm_period) next_duty_cycle <= pwm_period;
+        //         else next_duty_cycle <= pwm_duty_cycle;
+        //     end
+
+        //     if (period_counter == 0) begin
+        //         // start a new cycle
+        //         period_counter <= next_period - 1; // count current cycle
+        //         high_counter <= next_duty_cycle;
+        //         period_start <= 1;
+        //     end else begin
+        //         period_counter <= period_counter - 1;
+        //         if (high_counter > 0) begin
+        //             high_counter <= high_counter - 1;
+        //         end
+        //         pwm <= (high_counter > 0);
+        //         period_start <= 0;
+        //     end
+        // end
     end
 endmodule

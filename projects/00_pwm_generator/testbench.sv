@@ -13,7 +13,6 @@ module testbench;
         $dumpvars(0, testbench);
     end
 
-    PWMGenerator_TestSweep pwm_test_sweep(.t_clk(t_clk));
-    // PWMGenerator_TestDefault pwm_test_default(.t_clk(t_clk));
+    PWMGenerator_Tests tests_pwm(t_clk);
 
 endmodule
