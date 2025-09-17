@@ -5,8 +5,42 @@ module PWMGenerator_Tests (
     input t_clk
 );
     PWMGenerator_TestDefault test_pwm_default(t_clk);
+    PWMGenerator_TestDuty test_pwm_duty(t_clk);
 endmodule
 
+// DutyCounter is a test utility which ensures that,
+// over the last WINDOW clock cycles, the number of
+// high cycles == g_duty.
+module DutyCounter #(
+    parameter WINDOW=2048
+) (
+    input t_clk,
+    input signal,
+    input [($clog2(WINDOW)-1):0] g_duty
+);
+    int sum = 0;
+    logic delay_line [$];
+
+    always_ff @(posedge t_clk) begin
+        if (signal) sum++;
+        if (delay_line.pop_back()) sum--;
+    end
+
+    initial begin
+        repeat (WINDOW) begin
+            @(posedge t_clk);
+            delay_line.push_front(signal);
+        end
+
+        while (1) begin
+            @(posedge t_clk);
+            delay_line.push_front(signal);
+
+            if (sum != g_duty)
+                $error("duty counter failed: expected %d was %d", g_duty, sum);
+        end
+    end
+endmodule
 
 module PWMGenerator_TestDefault (
     input t_clk
@@ -60,7 +94,43 @@ module PWMGenerator_TestDefault (
             repeat(DEFAULT_PERIOD-1) @(posedge t_clk);    
         end
     end
+endmodule
 
+module PWMGenerator_TestDuty (
+    input t_clk
+);
+    localparam WIDTH = 8;
+    localparam DUTY = 8'd127;
+
+    logic t_reset;
+    logic t_pwm;
+    logic t_update;
+
+    PWMGenerator #(.WIDTH(WIDTH)) dut (
+        .clk(t_clk),
+        .reset(t_reset),
+        .update_parameters(t_update),
+        .pwm_period(8'hFF),
+        .pwm_duty_cycle(DUTY),
+        .pwm(t_pwm)
+    );
+
+    DutyCounter #(.WINDOW(8'hFF)) duty_counter (
+        .t_clk(t_clk), .signal(t_pwm), .g_duty(DUTY)
+    );
+
+    initial begin : test_duty
+        // trigger reset
+        @(posedge t_clk);
+        t_reset <= 1;
+        @(posedge t_clk);
+        t_reset <= 0;
+        @(posedge t_clk);
+
+        t_update <= 1;
+        @(posedge t_clk);
+        t_update <= 0;
+    end
 endmodule
 
 // module PWMGenerator_TestSweep (

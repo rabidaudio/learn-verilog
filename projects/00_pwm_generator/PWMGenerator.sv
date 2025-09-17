@@ -5,7 +5,6 @@
  * should be determined by the input parameters 'pwm_period' and 'pwm_duty_cycle', both measured
  * in clock cycles.
  *
- * The default period and duty cycle should be 256 and 0, respectively on reset.
  */
 module PWMGenerator #(
     parameter WIDTH=16
@@ -44,13 +43,18 @@ module PWMGenerator #(
 
     always_ff @(posedge clk) begin
         if (reset) begin
-            next_period <= (1 << (WIDTH-1)); // half width
+            next_period <= '1;
             next_duty_cycle <= 0;
             period_counter <= 0;
             high_counter <= 0;
         end else begin
             if (period_counter == 0) period_counter <= next_period-1;
             else period_counter <= period_counter - 1;
+
+            if (period_counter == 0) period_start <= 1;
+            else period_start <= 0;
+
+            pwm <= 0;
         end
 
         // if (reset) begin
