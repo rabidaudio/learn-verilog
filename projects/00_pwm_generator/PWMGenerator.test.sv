@@ -5,62 +5,12 @@ module PWMGenerator_Tests (
     input t_clk,
     input t_reset
 );
-    PWMGenerator_TestZero test_pwm_zero(t_clk, t_reset);
-    // PWMGenerator_TestDefault test_pwm_default(t_clk);
-    // PWMGenerator_TestDuty test_pwm_duty(t_clk);
+    PWMGenerator_Test0 test_pwm_0(t_clk, t_reset);
+    PWMGenerator_Test100 test_pwm_100(t_clk, t_reset);
+    PWMGenerator_Test50 test_pwm_50(t_clk, t_reset);
 endmodule
 
-// module PWMGenerator_TestDefault (
-//     input t_clk
-// );
-//     localparam WIDTH = 8;
-//     localparam DEFAULT_PERIOD = 8'h7f;
-
-//     logic t_reset;
-//     logic t_pwm;
-
-//     PWMGenerator #(.WIDTH(WIDTH)) dut (
-//         .clk(t_clk),
-//         .reset(t_reset),
-//         .update_parameters('0),
-//         .pwm(t_pwm),
-//         .period_start(t_period_start)
-//     );
-
-//     logic g_period_start;
-
-//     DutyCounter #(.WINDOW(8'hFF)) duty_counter (
-//         .t_clk(t_clk),
-//         .signal(t_pwm),
-//         .g_duty(DEFAULT_PERIOD)
-//     );
-//     GoldenMonitor gm_p_start(
-//         .clk(t_clk),
-//         .enable('1),
-//         .golden(g_period_start),
-//         .signal(t_period_start)
-//     );
-
-//     // starts up the pwm and asserts the duty is constant
-//     // and the period ticks
-//     initial begin : test_pwm_defaults
-//         // trigger reset
-//         @(posedge t_clk);
-//         t_reset <= 1;
-//         @(posedge t_clk);
-//         t_reset <= 0;
-//         @(posedge t_clk);
-
-//         while (1) begin
-//             g_period_start <= 1;
-//             @(posedge t_clk);
-//             g_period_start <= 0;
-//             repeat(DEFAULT_PERIOD-1) @(posedge t_clk);    
-//         end
-//     end
-// endmodule
-
-module PWMGenerator_TestZero (
+module PWMGenerator_Test0 (
     input t_clk,
     input t_reset
 );
@@ -82,11 +32,18 @@ module PWMGenerator_TestZero (
     );
 
     // assert that t_pwm is low all the time
-    DutyCounter #(.WINDOW(8'hFF)) duty_counter (
-        .t_clk(t_clk),
-        .signal(t_pwm),
-        .g_duty('0)
+    logic gm_pwm_enable;
+    GoldenMonitor gm_pwm(
+        .clk(t_clk),
+        .enable(gm_pwm_enable),
+        .golden('0),
+        .signal(t_pwm)
     );
+    initial begin
+        gm_pwm_enable <= 0;
+        repeat(3) @(posedge t_clk);
+        gm_pwm_enable <= 1;
+    end
 
     // assert that period_start goes high once at the beginning of each period
     logic g_period_start;
@@ -101,13 +58,66 @@ module PWMGenerator_TestZero (
     );
 endmodule
 
-module PWMGenerator_TestDuty (
-    input t_clk
+module PWMGenerator_Test100 (
+    input t_clk,
+    input t_reset
 );
+    localparam WIDTH = 8;
+    localparam PERIOD = 8'hff;
+
+    logic t_pwm;
+
+    PWMGenerator #(
+        .WIDTH(WIDTH),
+        .INITIAL_PERIOD(PERIOD),
+        .INITIAL_DUTY(PERIOD+1)
+    ) dut (
+        .clk(t_clk),
+        .reset(t_reset),
+        .update_parameters('0),
+        .pwm(t_pwm),
+        .period_start(t_period_start)
+    );
+
+    // assert that t_pwm is high all the time
+    logic gm_pwm_enable;
+    GoldenMonitor gm_pwm(
+        .clk(t_clk),
+        .enable(gm_pwm_enable),
+        .golden('1),
+        .signal(t_pwm)
+    );
+    initial begin
+        gm_pwm_enable <= 0;
+        repeat(3) @(posedge t_clk);
+        gm_pwm_enable <= 1;
+    end
+
+    // assert that period_start goes high once at the beginning of each period
+    logic g_period_start;
+    ConstantPWM #(.PERIOD(PERIOD), .DUTY(1)) start_reference (
+        .t_clk(t_clk), .reset(t_reset), .pwm(g_period_start)
+    );
+    GoldenMonitor #(.DELAY(2)) gm_p_start(
+        .clk(t_clk),
+        .enable('1),
+        .golden(g_period_start),
+        .signal(t_period_start)
+    );
+endmodule
+
+module PWMGenerator_Test50 (
+    input t_clk,
+    input t_reset
+);
+    // localparam WIDTH = 8;
+    // localparam PERIOD = 8'hff;
+    // localparam DUTY = 8'h7f;
+
     localparam WIDTH = 4;
+    localparam PERIOD = 4'hf;
     localparam DUTY = 4'h7;
 
-    logic t_reset;
     logic t_pwm;
     logic t_update;
 
@@ -120,20 +130,10 @@ module PWMGenerator_TestDuty (
         .pwm(t_pwm)
     );
 
-    DutyCounter #(.WINDOW(4'hF)) duty_counter (
+    // assert duty correct
+    DutyCounter #(.WINDOW(PERIOD)) duty_counter (
         .t_clk(t_clk), .signal(t_pwm), .g_duty(DUTY)
     );
-
-    initial begin : test_duty
-        // trigger reset
-        @(posedge t_clk);
-        t_reset <= 1;
-        @(posedge t_clk);
-        t_reset <= 0;
-        t_update <= 1;
-        @(posedge t_clk);
-        t_update <= 0;
-    end
 endmodule
 
 // module PWMGenerator_TestSweep (
