@@ -5,9 +5,11 @@ module PWMGenerator_Tests (
     input t_clk,
     input t_reset
 );
-    PWMGenerator_Test0 test_pwm_0(t_clk, t_reset);
-    PWMGenerator_Test100 test_pwm_100(t_clk, t_reset);
-    PWMGenerator_Test50 test_pwm_50(t_clk, t_reset);
+    // PWMGenerator_Test0 test_pwm_0(t_clk, t_reset);
+    // PWMGenerator_Test100 test_pwm_100(t_clk, t_reset);
+    // PWMGenerator_Test50 test_pwm_50(t_clk, t_reset);
+
+    PWMGenerator_TestUpdateDuty test_pwm_update(t_clk, t_reset);
 endmodule
 
 module PWMGenerator_Test0 (
@@ -116,104 +118,79 @@ module PWMGenerator_Test50 (
     );
 endmodule
 
-// module PWMGenerator_TestSweep (
-//     input t_clk
+module PWMGenerator_TestUpdateDuty (
+    input t_clk,
+    input t_reset
+);
+    localparam PERIOD = 8;
+
+    logic t_pwm;
+    logic [3:0] t_pwm_duty_cycle;
+    logic t_update_parameters;
+    logic t_period_end;
+
+    PWMGenerator #(
+        .INITIAL_PERIOD(PERIOD),
+        .INITIAL_DUTY(0)
+    ) dut (
+        .clk(t_clk),
+        .reset(t_reset),
+        .pwm_duty_cycle(t_pwm_duty_cycle),
+        .update_parameters(t_update_parameters),
+        .period_end(t_period_end),
+        .pwm(t_pwm)
+    );
+
+    logic [3:0] measured_duty;
+    initial begin
+        measured_duty <= 0;
+        repeat(3) @(posedge t_clk);
+        
+        while (1) begin
+            if (t_period_end) measured_duty <= 0;
+            else measured_duty <= measured_duty + t_pwm;
+            @(posedge t_clk);
+        end
+    end
+
+    // when an end of period is reached, compare the measured period to
+    // the one set the previous period
+    GoldenMonitor #(.WIDTH(4), .DELAY(PERIOD)) gm_duty(
+        .clk(t_clk),
+        .enable(t_period_end),
+        .golden(t_pwm_duty_cycle),
+        .signal(measured_duty)
+    );
+
+    // change duty cycle at random points excluding the first period.
+    // changes should take place the following period.
+    initial begin
+        int change_after;
+
+        repeat(3) @(posedge t_clk);
+        while (1) begin
+            for (int duty = 0; duty < PERIOD; duty++) begin
+                change_after = $urandom_range(PERIOD-2);
+                for (int t = 0; t < PERIOD; t++) begin
+                    t_pwm_duty_cycle <= duty;
+                    t_update_parameters <= (t == change_after);
+                    @(posedge t_clk);
+                end
+            end
+        end
+    end
+
+endmodule
+
+// module PWMGenerator_TestUpdateDutyImmediate (
+//     input t_clk,
+//     input t_reset
 // );
-//     localparam WIDTH = 8;
 
-//     logic t_reset;
-//     logic t_update_parameters;
-//     logic [WIDTH-1:0] t_pwm_period;
-//     logic [WIDTH-1:0] t_pwm_duty_cycle;
-//     logic t_pwm;
-//     logic t_period_start;
+//     // change duty cycle on the start of the period. changes should
+//     // apply immediately
+//     initial begin
 
-//     logic g_pwm;
-//     logic g_period_start;
-//     logic g_period_start_en;
-
-//     GoldenMonitor #(.DELAY(1)) gm_period_start(
-//         .clk(t_clk),
-//         .enable(g_period_start_en),
-//         .golden(g_period_start),
-//         .signal(t_period_start)
-//     );
-
-//     PWMGenerator #(.WIDTH(WIDTH)) dut (
-//         .clk(t_clk),
-//         .reset(t_reset),
-//         .update_parameters(t_update_parameters),
-//         .pwm_period(t_pwm_period),
-//         .pwm_duty_cycle(t_pwm_duty_cycle),
-//         .pwm(t_pwm),
-//         .period_start(t_period_start)
-//     );
-
-//     // this test goes through 4 cycles of each duty cycle at
-//     // a constant period, switching duty cycle at a random point
-//     // within the last cycle.
-//     // it sums the amount of time the output is high and
-//     // asserts that this matches the given duty cycle.
-//     initial begin : test_pwm_generator
-//         int period;
-
-//         period = (1 << (WIDTH-2))-1;
-
-//         // trigger reset
-//         @(posedge t_clk);
-//         t_reset <= 1;
-//         @(posedge t_clk);
-//         t_reset <= 0;
-//         @(posedge t_clk);
-
-//         // configure
-//         t_pwm_period <= period;
-//         t_pwm_duty_cycle <= 0;
-//         t_update_parameters <= 1;
-//         @(posedge t_clk);
-//         t_update_parameters <= 0;
-//         repeat(period) @(posedge t_clk);
-//         repeat(period-1) @(posedge t_clk);
-
-//         g_period_start_en <= 1;
-
-//         for (int d = 0; d <= period; d++) begin : sweep
-//         // for (int d = 62; d <= period; d++) begin : sweep // STOPSHIP
-//             int iterations;
-//             int high_count;
-//             int period_count;
-
-//             iterations = 1;
-//             high_count = 0;
-//             period_count = 0;
-//             for (int c = iterations; c-- > 0;) begin
-//                 int switch_after;
-
-//                 switch_after = $urandom_range(period-1);
-//                 for (int t = 0; t < period; t++) begin
-//                     @(posedge t_clk);
-
-//                     g_period_start <= (t == 0);
-//                     t_pwm_period = period;
-//                     t_pwm_duty_cycle <= d + 1; // the next period
-//                     if (t_pwm) high_count = high_count + 1;
-//                     if (t_period_start) period_count = period_count + 1;
-
-//                     if (c == 0 && t == switch_after) t_update_parameters <= 1;
-//                     else t_update_parameters <= 0;
-//                 end
-//             end
-//             if (high_count != iterations*d)
-//                 $error("test failed: duty=%d, expected %d cycles high but was %d",
-//                     d, iterations*d, high_count);
-//         end
-
-//         g_period_start_en <= 0;
 //     end
 
 // endmodule
-
-// TODO test defaults
-// TODO test change on start
-// TODO test change on end
-

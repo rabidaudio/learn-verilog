@@ -48,11 +48,10 @@ module PWMGenerator #(
             next_duty_cycle <= INITIAL_DUTY;
             period_counter <= INITIAL_PERIOD-1;
             high_counter <= INITIAL_DUTY;
-            // pwm <= (INITIAL_DUTY > 0);
         end else begin
-            // if (update_parameters) begin
-            //     next_duty_cycle <= pwm_duty_cycle;
-            // end
+            if (update_parameters) begin
+                next_duty_cycle <= pwm_duty_cycle;
+            end
 
             period_counter <= period_counter == 0 ? (next_period-1) : period_counter - 1;
 
@@ -60,7 +59,7 @@ module PWMGenerator #(
 
             if (period_counter == 0)
                 // allow immediate update on the first clock of the period
-                high_counter <= next_duty_cycle; // (update_parameters ? pwm_duty_cycle : next_duty_cycle);
+                high_counter <= (update_parameters ? pwm_duty_cycle : next_duty_cycle);
             else if (high_counter > 0) high_counter <= high_counter - 1;
             else high_counter <= 0;
 

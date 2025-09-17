@@ -36,11 +36,11 @@ module DutyCounter #(
 ) (
     input t_clk,
     input signal,
-    input [($clog2(WINDOW)-1):0] g_duty,
-    output logic [($clog2(WINDOW)-1):0] duty
+    input [$clog2(WINDOW):0] g_duty,
+    output logic [$clog2(WINDOW):0] duty
 );
-    logic [($clog2(WINDOW)-1):0] sum;
     logic delay_line [$];
+    logic compare;
 
     initial begin
         duty <= 0;
@@ -53,11 +53,13 @@ module DutyCounter #(
         while (1) begin
             @(posedge t_clk);
             delay_line.push_front(signal);
+            compare = delay_line.pop_back();
+            // duty = duty - delay_line.pop_back() + signal;
             if (signal) duty++;
-            if (delay_line.pop_back()) duty--;
+            if (compare) duty--;
 
-            if (ASSERT && sum != g_duty)
-                $error("duty counter failed: expected %d was %d", g_duty, sum);
+            if (ASSERT && duty != g_duty)
+                $error("duty counter failed: expected %d was %d", g_duty, duty);
         end
     end
 endmodule
