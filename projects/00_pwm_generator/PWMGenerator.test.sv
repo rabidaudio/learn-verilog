@@ -99,8 +99,8 @@ endmodule
 module PWMGenerator_TestDuty (
     input t_clk
 );
-    localparam WIDTH = 8;
-    localparam DUTY = 8'd127;
+    localparam WIDTH = 4;
+    localparam DUTY = 4'h7;
 
     logic t_reset;
     logic t_pwm;
@@ -110,12 +110,12 @@ module PWMGenerator_TestDuty (
         .clk(t_clk),
         .reset(t_reset),
         .update_parameters(t_update),
-        .pwm_period(8'hFF),
+        .pwm_period('1),
         .pwm_duty_cycle(DUTY),
         .pwm(t_pwm)
     );
 
-    DutyCounter #(.WINDOW(8'hFF)) duty_counter (
+    DutyCounter #(.WINDOW(4'hF)) duty_counter (
         .t_clk(t_clk), .signal(t_pwm), .g_duty(DUTY)
     );
 
@@ -125,8 +125,6 @@ module PWMGenerator_TestDuty (
         t_reset <= 1;
         @(posedge t_clk);
         t_reset <= 0;
-        @(posedge t_clk);
-
         t_update <= 1;
         @(posedge t_clk);
         t_update <= 0;
