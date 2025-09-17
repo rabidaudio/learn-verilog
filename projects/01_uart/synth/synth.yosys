@@ -1,0 +1,2 @@
+read_verilog -sv ../uart.sv
+synth_ice40 -top top -json proj.json
