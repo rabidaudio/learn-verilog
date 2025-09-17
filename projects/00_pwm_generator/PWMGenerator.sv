@@ -64,14 +64,12 @@ module PWMGenerator #(
                 period_start <= 1;
             end else begin
                 period_counter <= period_counter - 1;
-                if (high_counter == 0) begin
-                end else begin
+                if (high_counter > 0) begin
                     high_counter <= high_counter - 1;
                 end
+                pwm <= (high_counter > 0);
                 period_start <= 0;
             end
         end
     end
-
-    always_comb pwm = high_counter > 0;
 endmodule
