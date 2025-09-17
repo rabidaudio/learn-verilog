@@ -23,13 +23,13 @@ module PWMGenerator #(
     // clock cycles for high value, permitted to be 0% to 100% inclusive, i.e. 0 to `pwm_period`+1
     input [WIDTH:0] pwm_duty_cycle,
 
+    // pulled high on the last cycle of a period
+    // output logic period_end
+
     // output signal
     // TODO: use PRS generator instead:
     // https://www.isotel.eu/mixedsim/intro/prssine.html
-    output logic pwm,
-
-    // pulled high at the start of a new period
-    output logic period_start
+    output logic pwm
 );
     // the period to use for the next cycle
     logic [WIDTH-1:0] next_period;
@@ -46,26 +46,24 @@ module PWMGenerator #(
         if (reset) begin
             next_period <= INITIAL_PERIOD;
             next_duty_cycle <= INITIAL_DUTY;
-            period_counter <= 0;
-            high_counter <= 0;
-            pwm <= 0;
+            period_counter <= INITIAL_PERIOD-1;
+            high_counter <= INITIAL_DUTY;
+            pwm <= (INITIAL_DUTY > 0);
         end else begin
-            if (update_parameters) begin
-                next_duty_cycle <= pwm_duty_cycle;
-            end
+            // if (update_parameters) begin
+            //     next_duty_cycle <= pwm_duty_cycle;
+            // end
 
             period_counter <= period_counter == 0 ? (next_period-1) : period_counter - 1;
 
-            period_start <= (period_counter == 0);
+            // period_end <= (period_counter == 0);
 
             if (period_counter == 0)
                 // allow immediate update on the first clock of the period
-                high_counter <= (update_parameters ? pwm_duty_cycle : next_duty_cycle);
+                high_counter <= next_duty_cycle; // (update_parameters ? pwm_duty_cycle : next_duty_cycle);
             else if (high_counter > 0) high_counter <= high_counter - 1;
             else high_counter <= 0;
 
-            // if (period_counter == 0) pwm <= (next_duty_cycle != 0);
-            // else 
             pwm <= (high_counter > 0);
         end
     end

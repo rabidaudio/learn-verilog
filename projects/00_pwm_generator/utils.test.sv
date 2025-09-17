@@ -17,7 +17,7 @@ module ConstantPWM #(
     initial begin
         @(posedge reset);
         while (1) begin
-            for (int i = 0; i <= PERIOD; i++) begin
+            for (int i = 0; i < PERIOD; i++) begin
                 pwm <= (i < DUTY);
                 @(posedge t_clk);
             end
