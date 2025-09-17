@@ -2,12 +2,13 @@
 
 /**
  * This module should generate a pwm output signal. The period and duty cycle of the pwm signal
- * should be determined by the input parameters 'pwm_period' and 'pwm_duty_cycle', both measured
+ * should be determined by the input parameters `pwm_period` and `pwm_duty_cycle`, both measured
  * in clock cycles.
- *
  */
 module PWMGenerator #(
-    parameter WIDTH=16
+    parameter WIDTH=16,
+    parameter INITIAL_PERIOD=(1<<WIDTH)-1,
+    parameter INITIAL_DUTY=((1<<WIDTH)-1)/2
 )  (
     input clk,
     input reset,
@@ -16,11 +17,11 @@ module PWMGenerator #(
     // the following cycle
     input update_parameters,
 
-    // clock cycles+1 for one period, must be > 0
+    // clock cycles+1 for one period
     input [WIDTH-1:0] pwm_period,
 
-    // clock cycles for high value, permitted to be 0% to 100% inclusive, i.e. 0 to pwm_period
-    input [WIDTH-1:0] pwm_duty_cycle, // TODO how many bits necessary?
+    // clock cycles for high value, permitted to be 0% to 100% inclusive, i.e. 0 to `pwm_period`
+    input [WIDTH-1:0] pwm_duty_cycle,
 
     // output signal
     // TODO: use PRS generator instead:
@@ -43,8 +44,8 @@ module PWMGenerator #(
 
     always_ff @(posedge clk) begin
         if (reset) begin
-            next_period <= '1;
-            next_duty_cycle <= 0;
+            next_period <= INITIAL_PERIOD;
+            next_duty_cycle <= INITIAL_DUTY;
             period_counter <= 0;
             high_counter <= 0;
             pwm <= 0;

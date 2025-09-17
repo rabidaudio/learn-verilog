@@ -5,19 +5,21 @@
  * It takes advantage of the iCE40's initial / reset capabilities on
  * power-up.
  */
-module ResetGenerator (
+module ResetGenerator #(
+    parameter AFTER = 'hFFFF
+) (
     input clk,
     output logic reset
 );
     logic [15:0] reset_counter;
-    initial reset_counter = 0;
+    initial reset_counter = 1;
     initial reset = 0;
 
     always_ff @(posedge clk) begin
-        if (reset_counter != '1) begin
-            reset_counter <= reset_counter + 1;
-        end else begin
+        if (reset_counter == AFTER) begin
             reset <= 1;
-        end
+            reset_counter <= 0;
+        end else if (reset_counter == 0) reset <= 0;
+        else reset_counter <= reset_counter + 1;
     end
 endmodule
