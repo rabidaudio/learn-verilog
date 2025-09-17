@@ -2,4 +2,10 @@
 *.vcd
 *.vvp
 
+# don't commit synth output products
+*.asc
+*.bin
+*.json
+
+# Don't commit my answers
 exercises/solutions

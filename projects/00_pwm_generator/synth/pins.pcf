@@ -1,0 +1,6 @@
+set_io clk 35
+set_io led_rgb_o[0] 40
+set_io led_rgb_o[1] 41
+set_io led_rgb_o[2] 39
+
+set_frequency clk 12

@@ -1,3 +1,0 @@
-read_verilog -sv ../top.sv
-synth_ice40 -top led_blinker -json blinky.json
-scc

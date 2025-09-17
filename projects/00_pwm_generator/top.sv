@@ -12,13 +12,14 @@ module reset_generator (
 );
     logic [15:0] reset_counter;
     initial reset_counter = 0;
-    initial reset = 0;
+    initial reset = 1;
 
     always_ff @(posedge clk) begin
         if (reset_counter != '1) begin
+            reset <= 1;
             reset_counter <= reset_counter + 1;
         end else begin
-            reset <= 1;
+            reset <= 0;
         end
     end
 endmodule
@@ -54,13 +55,12 @@ module pwm_generator #(
     // Extra credit:
     //     How many bits are actually needed to store this value? If we have, say, a
     //     16-bit PWM module, is 16 bits enough to store the PWM duty cycle? Why or why not?
-    input [WIDTH-1:0] pwm_duty_cycle,
+    input [WIDTH:0] pwm_duty_cycle,
 
     output logic pwm
 );
 
-
-endmodule // pwm_generator
+endmodule
 
 
 /**
@@ -70,27 +70,27 @@ endmodule // pwm_generator
  * and dim an LED - setting the duty_cycle to 0 will shut the LED off, but setting it to the
  * PWM period will turn the LED on max; intermediate values will dim the LED accordingly.
  *
- * The pwm_generator module should use a 'pwm_generator' module to brighten and dim the LED,
+ * You should use a second 'pwm_sequencer' module to brighten and dim the LED,
  * increasing and decreasing the LED's intensity over a period of 2 seconds. The LED should
  * smoothly go from fully off to fully on and then fully off again in 2 seconds.
  *
- * You should make your own testbench.
- * When testing this module in a testbench, you may want to increase the frequency and use a period
- * of less than 2 seconds. Simulating 2 full seconds will be difficult in a testbench.
+ * Once you think your module works, entering the 'synth' folder and running ./build.sh will
+ * generate a bitstream (proj.bin) that can be sent to the iCESugar board.
  *
- * Once you think your module works, entering the 'synth' folder and running ./build.sh and
- * ./program.sh will deploy your design to an iCESugar board.
+ * To program the iCESugar board, just plug it into your computer. It will show up as a USB drive;
+ * just drag and drop the resulting 'proj.bin' file into the USB drive and wait for a couple seconds.
  *
  * Hint:
  *   - You should use the provided 'reset_generator' module to provide a reset signal to internally
  *     instantiated modules.
+ *   - Note that rgb_led_o is *active low*.
  */
 module led_breather (
     input clk,
-    output logic led
+    output logic [2:0] led_rgb_o
 );
     logic reset;
     reset_generator system_reset_module (
-        .clk(clk), .reset(reset);
+        .clk(clk), .reset(reset)
     );
 endmodule
