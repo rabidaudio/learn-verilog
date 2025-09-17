@@ -1,14 +1,14 @@
 `pragma once
 
 /**
- * This module should generate a pwm output signal. The period and duty cycle of the pwm signal
- * should be determined by the input parameters `pwm_period` and `pwm_duty_cycle`, both measured
+ * PWMGenerator generates a pwm output signal. The period and duty cycle of the pwm signal
+ * is be determined by the input parameters `pwm_period` and `pwm_duty_cycle`, both measured
  * in clock cycles.
  */
 module PWMGenerator #(
-    parameter WIDTH=16,
-    parameter INITIAL_PERIOD=(1<<WIDTH)-1,
-    parameter INITIAL_DUTY=((1<<WIDTH)-1)/2
+    parameter INITIAL_PERIOD=256,
+    parameter INITIAL_DUTY=128,
+    parameter WIDTH=$clog2(INITIAL_PERIOD)
 )  (
     input clk,
     input reset,
@@ -54,8 +54,8 @@ module PWMGenerator #(
                 next_duty_cycle <= pwm_duty_cycle;
             end
 
-            period_counter <= period_counter == 0 ? next_period : period_counter - 1;
-            
+            period_counter <= period_counter == 0 ? (next_period-1) : period_counter - 1;
+
             period_start <= (period_counter == 0);
 
             if (period_counter == 0)
@@ -64,8 +64,9 @@ module PWMGenerator #(
             else if (high_counter > 0) high_counter <= high_counter - 1;
             else high_counter <= 0;
 
-            if (period_counter == 0) pwm <= (next_duty_cycle != 0);
-            else pwm <= (high_counter > 0);
+            // if (period_counter == 0) pwm <= (next_duty_cycle != 0);
+            // else 
+            pwm <= (high_counter > 0);
         end
     end
 endmodule

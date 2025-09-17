@@ -14,13 +14,11 @@ module PWMGenerator_Test0 (
     input t_clk,
     input t_reset
 );
-    localparam WIDTH = 8;
-    localparam PERIOD = 8'hff;
+    localparam PERIOD = 2;
 
     logic t_pwm;
 
     PWMGenerator #(
-        .WIDTH(WIDTH),
         .INITIAL_PERIOD(PERIOD),
         .INITIAL_DUTY(0)
     ) dut (
@@ -62,15 +60,13 @@ module PWMGenerator_Test100 (
     input t_clk,
     input t_reset
 );
-    localparam WIDTH = 8;
-    localparam PERIOD = 8'hff;
+    localparam PERIOD = 2;
 
     logic t_pwm;
 
     PWMGenerator #(
-        .WIDTH(WIDTH),
         .INITIAL_PERIOD(PERIOD),
-        .INITIAL_DUTY(PERIOD+1)
+        .INITIAL_DUTY(PERIOD)
     ) dut (
         .clk(t_clk),
         .reset(t_reset),
@@ -110,23 +106,18 @@ module PWMGenerator_Test50 (
     input t_clk,
     input t_reset
 );
-    // localparam WIDTH = 8;
-    // localparam PERIOD = 8'hff;
-    // localparam DUTY = 8'h7f;
-
-    localparam WIDTH = 4;
-    localparam PERIOD = 4'hf;
-    localparam DUTY = 4'h7;
+    localparam PERIOD = 2;
+    localparam DUTY = 1;
 
     logic t_pwm;
-    logic t_update;
 
-    PWMGenerator #(.WIDTH(WIDTH)) dut (
+    PWMGenerator #(
+        .INITIAL_PERIOD(PERIOD),
+        .INITIAL_DUTY(DUTY)
+    ) dut (
         .clk(t_clk),
         .reset(t_reset),
-        .update_parameters(t_update),
-        .pwm_period('1),
-        .pwm_duty_cycle(DUTY),
+        .update_parameters('0),
         .pwm(t_pwm)
     );
 

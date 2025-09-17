@@ -1,8 +1,10 @@
 // A set of test bench utility modules
 `pragma once
 
-// ConstantPWM is a test utility that generates
-// a pwm signal of fixed period and duty
+/**
+ * ConstantPWM is a test utility that generates
+ * a pwm signal of fixed period and duty cycle.
+ */
 module ConstantPWM #(
     parameter PERIOD = 'hFF,
     parameter DUTY = 'h7F
@@ -23,9 +25,11 @@ module ConstantPWM #(
     end
 endmodule
 
-// DutyCounter is a test utility which ensures that,
-// over the last WINDOW clock cycles, the number of
-// high cycles == g_duty.
+/**
+ * DutyCounter is a test utility which ensures that,
+ * over the last WINDOW clock cycles, the number of
+ * high cycles == g_duty.
+ */
 module DutyCounter #(
     parameter WINDOW=2048
 ) (
