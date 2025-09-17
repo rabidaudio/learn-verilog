@@ -28,14 +28,19 @@ To do projects with this FPGA, you'll need to install...
    You use Icarus Verilog almost like you'd use `gcc`. You pass in a list of verilog files that you want to compile together and it produces a binary which runs all of the initial statements from the files in parallel. See `00 example` for an example invocation of `iverilog`.
  * [GTKWave](https://gtkwave.sourceforge.net/)
    GTKWave is a GUI program that lets you view the outputs of Verilog simulations. You can also use an online webapp (like [surfer](https://app.surfer-project.org/)), but installing GTKWave locally may have better performance.
- * [Yosys](https://yosyshq.net/yosys/download.html)
-   Yosys is a fully open-source logic synthesizer. It takes in a bunch of systemverilog files and produces a `json` file describing a logic circuit which can be read by other tools.
- * [NextPnR iCE40]()
-See their respective websites for installation instructions.
+ * [TabbyCAD OSS](https://github.com/YosysHQ/oss-cad-suite-build/releases)
+   TabbyCAD OSS is a fully open-source suite of FPGA synthesis and place-and-route tools. It includes:
+     * `yosys`
+        Yosys is a fully open-source logic synthesizer. It takes in a bunch of systemverilog files and produces a `json` file describing a logic circuit which can be read by other tools.
+     * `nextpnr`
+       Next PnR is a Place-and-Route tool. It takes in a circuit description and figures out what circuit elements in an FPGA
+     * `icepack`
+       icepack takes a fully placed-and-routed FPGA design for an iCE40 FPGA and generates a bitstream. A bitstream is a file that can actually be loaded onto an FPGA.
+   All of these tools can be downloaded individually, but they are developed by the same team and TabbyCAD is a good way that they're packaged together.
 
 #### Folders
  * The `exercises` folder contains some classic exercises for you to practice your Verilog digital design fundamentals entirely in simulation. To do these you just need `iverilog` and `gtkwave`.
- * The `example` folder has a couple examples including a basic project template including a simple toplevel design, a testbench, and all the files you need to synthesize a blinky for the iCE40 FPGA.
+ * The `examples` folder has a couple examples including a basic project template including a simple toplevel design, a testbench, and all the files you need to synthesize a blinky for the iCE40 FPGA.
  * The `projects` folder has some more extended exercises, some of which you can actually put on an FPGA.
 
 #### Exercises

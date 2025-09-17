@@ -14,7 +14,7 @@ module top #(
     parameter CLOCK_SPEED = 12*1000*1000 // 12Mhz
 ) (
     input clk,
-    output logic led
+    output logic [2:0] led_rgb_o
 );
     logic reset;
     ResetGenerator #(.AFTER(RESET_DELAY)) system_reset_module (

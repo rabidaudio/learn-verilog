@@ -1,0 +1,2 @@
+read_verilog -sv ../led_breather.sv
+synth_ice40 -top led_breather -json proj.json
