@@ -82,7 +82,7 @@ module PWMGenerator_Test50 (
     input t_reset
 );
     localparam PERIOD = 8;
-    localparam DUTY = 4;
+    localparam logic [3:0] DUTY = 4;
 
     logic t_pwm;
     logic t_period_end;

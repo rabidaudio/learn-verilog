@@ -1,5 +1,6 @@
 `include "ResetGenerator.sv"
 `include "PWMGenerator.sv"
+`include "BrightnessStepper.sv"
 
 /**
  * This module brightens and dims an LED using PWM.
@@ -28,45 +29,64 @@ module top #(
     // TODO: compute this?
     localparam STEPS = 512;
     localparam CLOCK_PERIOD = LED_PERIOD / STEPS; // 46875
+    localparam WIDTH = $clog2(CLOCK_PERIOD)+1;
 
-    // counts up for each brightness level
-    logic [$clog2(STEPS)-1:0] step;
-    // wether we making the LED brighter or dimmer
-    logic rising;
+    logic red;
+    logic green;
+    logic blue;
 
-    // generator params
-    logic update_parameters;
-    logic [$clog2(CLOCK_PERIOD):0] pwm_duty_cycle;
+    // brightness params
+    logic update_brightness;
+    logic [WIDTH-1:0] brightness;
     logic period_end;
 
     PWMGenerator #(
         .INITIAL_PERIOD(CLOCK_PERIOD),
         .INITIAL_DUTY(0)
-    ) pwm (
+    ) red_gen (
         .clk(clk),
         .reset(reset),
-        .update_parameters(update_parameters),
-        .pwm_duty_cycle(pwm_duty_cycle),
+        .update_parameters(update_brightness),
+        .pwm_duty_cycle(brightness),
         .period_end(period_end),
-        .pwm(led)
+        .pwm(red)
+    );
+    PWMGenerator #(
+        .INITIAL_PERIOD(CLOCK_PERIOD),
+        .INITIAL_DUTY(0)
+    ) green_gen (
+        .clk(clk),
+        .reset(reset),
+        .update_parameters(update_brightness),
+        .pwm_duty_cycle(brightness),
+        .pwm(green)
+    );
+    PWMGenerator #(
+        .INITIAL_PERIOD(CLOCK_PERIOD),
+        .INITIAL_DUTY(0)
+    ) blue_gen (
+        .clk(clk),
+        .reset(reset),
+        .update_parameters(update_brightness),
+        .pwm_duty_cycle(brightness),
+        .pwm(blue)
+    );
+
+    BrightnessStepper #(
+        .STEPS(STEPS),
+        .WIDTH(WIDTH)
+    ) stepper (
+        .clk(period_end),
+        .reset(reset),
+        .brightness(brightness)
     );
 
     always_ff @(posedge clk) begin
         if (reset) begin
-            step <= 0;
-            rising <= 0;
-
-            pwm_duty_cycle <= 0;
+            led_rgb_o <= 0;
         end else begin
-            if (step == 0) rising <= ~rising;
-            step <= step + 1;
-
-            update_parameters <= 0;
-            if (period_end) begin
-                if (rising) pwm_duty_cycle <= pwm_duty_cycle + 1;
-                else pwm_duty_cycle <= pwm_duty_cycle - 1;
-                update_parameters <= 1;
-            end
+            led_rgb_o <= {red, green, blue};
         end
     end
+
 endmodule
