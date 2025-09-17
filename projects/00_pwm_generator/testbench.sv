@@ -1,7 +1,7 @@
 `timescale 1ns/100ps
 `include "PWMGenerator.test.sv"
 
-module Test_Main;
+module testbench;
     localparam realtime PERIOD = 10;
     localparam TEST_CYCLES = 4*16*16*256 + 1000;
     logic t_clk = 0;
@@ -10,9 +10,10 @@ module Test_Main;
 
     initial begin
         $dumpfile("dump.vcd");
-        $dumpvars(0, Test_Main);
+        $dumpvars(0, testbench);
     end
 
-    Test_PWMGenerator test1(.t_clk(t_clk));
+    PWMGenerator_TestSweep pwm_test_sweep(.t_clk(t_clk));
+    // PWMGenerator_TestDefault pwm_test_default(.t_clk(t_clk));
 
 endmodule
