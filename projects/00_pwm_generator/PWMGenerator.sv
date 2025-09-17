@@ -48,7 +48,7 @@ module PWMGenerator #(
             next_duty_cycle <= INITIAL_DUTY;
             period_counter <= INITIAL_PERIOD-1;
             high_counter <= INITIAL_DUTY;
-            pwm <= (INITIAL_DUTY > 0);
+            // pwm <= (INITIAL_DUTY > 0);
         end else begin
             // if (update_parameters) begin
             //     next_duty_cycle <= pwm_duty_cycle;

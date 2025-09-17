@@ -31,30 +31,32 @@ endmodule
  * high cycles == g_duty.
  */
 module DutyCounter #(
-    parameter WINDOW=2048
+    parameter WINDOW=2048,
+    parameter ASSERT=0
 ) (
     input t_clk,
     input signal,
-    input [($clog2(WINDOW)-1):0] g_duty
+    input [($clog2(WINDOW)-1):0] g_duty,
+    output logic [($clog2(WINDOW)-1):0] duty
 );
     logic [($clog2(WINDOW)-1):0] sum;
     logic delay_line [$];
 
     initial begin
-        sum <= 0;
+        duty <= 0;
         repeat (WINDOW) begin
             @(posedge t_clk);
             delay_line.push_front(signal);
-            if (signal) sum++;
+            if (signal) duty++;
         end
 
         while (1) begin
             @(posedge t_clk);
             delay_line.push_front(signal);
-            if (signal) sum++;
-            if (delay_line.pop_back()) sum--;
+            if (signal) duty++;
+            if (delay_line.pop_back()) duty--;
 
-            if (sum != g_duty)
+            if (ASSERT && sum != g_duty)
                 $error("duty counter failed: expected %d was %d", g_duty, sum);
         end
     end
