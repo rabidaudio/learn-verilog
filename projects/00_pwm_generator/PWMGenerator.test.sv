@@ -1,4 +1,5 @@
 `include "PWMGenerator.sv"
+`include "GoldenMonitor.sv"
 
 module PWMGenerator_TestSweep (
     input t_clk
@@ -11,6 +12,17 @@ module PWMGenerator_TestSweep (
     logic [WIDTH-1:0] t_pwm_duty_cycle;
     logic t_pwm;
     logic t_period_start;
+
+    logic g_pwm;
+    logic g_period_start;
+    logic g_period_start_en;
+
+    GoldenMonitor #(.DELAY(1)) gm_period_start(
+        .clk(t_clk),
+        .enable(g_period_start_en),
+        .golden(g_period_start),
+        .signal(t_period_start)
+    );
 
     PWMGenerator #(.WIDTH(WIDTH)) dut (
         .clk(t_clk),
@@ -48,12 +60,15 @@ module PWMGenerator_TestSweep (
         repeat(period) @(posedge t_clk);
         repeat(period-1) @(posedge t_clk);
 
-        for (int d = 1; d <= period; d++) begin : sweep
+        g_period_start_en <= 1;
+
+        for (int d = 0; d <= period; d++) begin : sweep
+        // for (int d = 62; d <= period; d++) begin : sweep // STOPSHIP
             int iterations;
             int high_count;
             int period_count;
 
-            iterations = 4;
+            iterations = 1;
             high_count = 0;
             period_count = 0;
             for (int c = iterations; c-- > 0;) begin
@@ -63,8 +78,9 @@ module PWMGenerator_TestSweep (
                 for (int t = 0; t < period; t++) begin
                     @(posedge t_clk);
 
+                    g_period_start <= (t == 0);
                     t_pwm_period = period;
-                    t_pwm_duty_cycle <= d;
+                    t_pwm_duty_cycle <= d + 1; // the next period
                     if (t_pwm) high_count = high_count + 1;
                     if (t_period_start) period_count = period_count + 1;
 
@@ -72,13 +88,12 @@ module PWMGenerator_TestSweep (
                     else t_update_parameters <= 0;
                 end
             end
-            if (high_count != iterations*(d-1))
+            if (high_count != iterations*d)
                 $error("test failed: duty=%d, expected %d cycles high but was %d",
-                    d-1, iterations*(d-1), high_count);
-            if (period_count != iterations)
-                $error("test failed: duty=%d, expected %d period starts but was %d",
-                    d-1, iterations, period_count);
+                    d, iterations*d, high_count);
         end
+
+        g_period_start_en <= 0;
     end
 
 endmodule

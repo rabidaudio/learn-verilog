@@ -17,7 +17,7 @@ module PWMGenerator #(
     // the following cycle
     input update_parameters,
 
-    // clock cycles for one period
+    // clock cycles for one period, must be > 0
     input [WIDTH-1:0] pwm_period,
 
     // clock cycles for high value, permitted to be 0% to 100% inclusive, i.e. 0 to pwm_period
@@ -42,6 +42,8 @@ module PWMGenerator #(
     // counts down to zero to track high portion of period
     logic [WIDTH-1:0] high_counter;
 
+    // for (i=0;i<4;i++) 0,1,2,3
+    // for (i=4)
     always_ff @(posedge clk) begin
         if (reset) begin
             next_period <= (1 << (WIDTH-1)); // half width
@@ -51,13 +53,13 @@ module PWMGenerator #(
         end else begin
             if (update_parameters) begin
                 next_period <= pwm_period;
-                if (pwm_duty_cycle > pwm_period) next_duty_cycle = pwm_period;
+                if (pwm_duty_cycle > pwm_period) next_duty_cycle <= pwm_period;
                 else next_duty_cycle <= pwm_duty_cycle;
             end
 
             if (period_counter == 0) begin
                 // start a new cycle
-                period_counter <= next_period;
+                period_counter <= next_period - 1; // count current cycle
                 high_counter <= next_duty_cycle;
                 period_start <= 1;
             end else begin
