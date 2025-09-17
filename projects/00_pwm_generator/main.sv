@@ -1,12 +1,11 @@
-`timescale 1ns/100ps
-
+`include "PWMGenerator.sv"
 
 /**
  * This utility module will emit a reset signal shortly after power-up.
  * It takes advantage of the iCE40's initial / reset capabilities on
  * power-up.
  */
-module reset_generator (
+module ResetGenerator (
     input clk,
     output logic reset
 );
@@ -22,45 +21,6 @@ module reset_generator (
         end
     end
 endmodule
-
-/**
- * This module should generate a pwm output signal. The period and duty cycle of the pwm signal
- * should be determined by the input parameters 'pwm_period' and 'pwm_duty_cycle', both measured
- * in clock cycles.
- *
- * The default period and duty cycle should be 256 and 0, respectively on reset.
- */
-module pwm_generator #(
-    parameter WIDTH=16
-)  (
-    input clk,
-    input reset,
-
-    // Whenever 'update_parameters' is strobed high for a cycle, update the module's period and
-    // duty cycle according to the 'pwm_period' and 'pwm_duty_cycle' inputs.
-    // Extra credit:
-    //     Make sure that updating the parameters at specific times doesn't cause glitching.
-    //     For instance, consider the case where we have a period of 256 and a duty cycle of, say,
-    //     10. On cycle 11, if we change the duty cycle to 100, we don't want the output to suddenly
-    //     go high again until the next cycle.
-    //     Likewise consider what would happen if the period is decreased from, say, 256 to 128 on
-    //     a cycle count > 128. Will your module handle this correctly?
-    input update_parameters,
-
-    // How many clock cycles long should each pwm cycle be?
-    input [WIDTH-1:0] pwm_period,
-
-    // For how many clock cycles should the pwm output signal be high?
-    // Extra credit:
-    //     How many bits are actually needed to store this value? If we have, say, a
-    //     16-bit PWM module, is 16 bits enough to store the PWM duty cycle? Why or why not?
-    input [WIDTH-1:0] pwm_duty_cycle,
-
-    output logic pwm
-);
-
-
-endmodule // pwm_generator
 
 
 /**
@@ -85,12 +45,60 @@ endmodule // pwm_generator
  *   - You should use the provided 'reset_generator' module to provide a reset signal to internally
  *     instantiated modules.
  */
-module led_breather (
+module Main (
     input clk,
     output logic led
 );
     logic reset;
-    reset_generator system_reset_module (
-        .clk(clk), .reset(reset);
+    ResetGenerator system_reset_module (
+        .clk(clk),
+        .reset(reset)
     );
+    localparam WIDTH = 16;
+
+    // the number of clock cycles to fully brighten/dim the LED
+    localparam LED_PERIOD = 12*1000*1000*2; // 2MHz * 2 seconds
+    // the period of the timer to use. selected for an integer number < 2^16
+    // TODO: compute this from width?
+    localparam CLOCK_PERIOD = LED_PERIOD / 512; // 46875
+
+    logic [$clog2(PERIOD)-1:0] step;
+    logic rising;
+
+    logic update_parameters;
+    logic [(WIDTH-1):0] pwm_period;
+    logic [(WIDTH-1):0] pwm_duty_cycle;
+    logic period_start;
+
+    PWMGenerator #(.WIDTH(WIDTH)) pwm (
+        .clk(clk),
+        .reset(reset),
+        .update_parameters(update_parameters),
+        .pwm_period(pwm_period),
+        .pwm_duty_cycle(pwm_duty_cycle),
+        .pwm(led),
+        .period_start(period_start),
+    );
+
+    always_ff (@posedge clk) begin
+        if (reset) begin
+            step <= 0;
+            rising <= 0;
+
+            pwm_period <= CLOCK_PERIOD;
+            pwm_duty_cycle <= 0;
+            update_parameters <= 1;
+        end else begin
+            if (step == 0) rising <= ~rising;
+            step <= step + 1;
+
+            update_parameters <= 0;
+            if (period_start) begin
+                pwm_period <= CLOCK_PERIOD;
+                if (rising) pwm_duty_cycle <= pwm_duty_cycle + 1;
+                else pwm_duty_cycle <= pwm_duty_cycle - 1;
+                update_parameters <= 1;
+            end
+        end
+    end
 endmodule

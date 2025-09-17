@@ -1,6 +1,6 @@
 {
     "go.testTimeout": "120s",
-    "verilog.linting.linter": "slang",
+    "verilog.linting.linter": "none",
     "verilog.linting.iverilog.systemVerilog.standard": "SystemVerilog2012",
     "cSpell.words": [
         "dumpfile",

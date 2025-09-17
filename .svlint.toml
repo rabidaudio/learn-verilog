@@ -238,6 +238,6 @@ style_trailingwhitespace = false
 tab_character = false
 unpacked_array = false
 uppercamelcase_interface = false
-uppercamelcase_module = false
+uppercamelcase_module = true
 uppercamelcase_package = false
 
