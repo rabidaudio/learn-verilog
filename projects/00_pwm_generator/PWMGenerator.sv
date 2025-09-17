@@ -14,7 +14,8 @@ module PWMGenerator #(
     input reset,
 
     // when pulled high, `pwm_period` and `pwm_duty_cycle` inputs are updated, to be used
-    // the following cycle
+    // the following period
+    // TODO: changing on the last cycle of the period causes it to take 2 full cycles to update
     input update_parameters,
 
     // clock cycles for one period
@@ -50,6 +51,7 @@ module PWMGenerator #(
             high_counter <= INITIAL_DUTY;
         end else begin
             if (update_parameters) begin
+                // TODO: allow changing period
                 next_duty_cycle <= pwm_duty_cycle;
             end
 
@@ -58,7 +60,6 @@ module PWMGenerator #(
             period_end <= (period_counter == 0);
 
             if (period_counter == 0)
-                // allow immediate update on the first clock of the period
                 high_counter <= (update_parameters ? pwm_duty_cycle : next_duty_cycle);
             else if (high_counter > 0) high_counter <= high_counter - 1;
             else high_counter <= 0;

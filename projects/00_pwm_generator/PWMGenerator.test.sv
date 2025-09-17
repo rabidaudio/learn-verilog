@@ -5,10 +5,9 @@ module PWMGenerator_Tests (
     input t_clk,
     input t_reset
 );
-    // PWMGenerator_Test0 test_pwm_0(t_clk, t_reset);
-    // PWMGenerator_Test100 test_pwm_100(t_clk, t_reset);
-    // PWMGenerator_Test50 test_pwm_50(t_clk, t_reset);
-
+    PWMGenerator_Test0 test_pwm_0(t_clk, t_reset);
+    PWMGenerator_Test100 test_pwm_100(t_clk, t_reset);
+    PWMGenerator_Test50 test_pwm_50(t_clk, t_reset);
     PWMGenerator_TestUpdateDuty test_pwm_update(t_clk, t_reset);
 endmodule
 
@@ -179,18 +178,4 @@ module PWMGenerator_TestUpdateDuty (
             end
         end
     end
-
 endmodule
-
-// module PWMGenerator_TestUpdateDutyImmediate (
-//     input t_clk,
-//     input t_reset
-// );
-
-//     // change duty cycle on the start of the period. changes should
-//     // apply immediately
-//     initial begin
-
-//     end
-
-// endmodule
