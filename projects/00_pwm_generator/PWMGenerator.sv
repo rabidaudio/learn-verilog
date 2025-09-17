@@ -1,4 +1,5 @@
-`pragma once
+`ifndef _PWMGenerator_
+`define _PWMGenerator_
 
 /**
  * PWMGenerator generates a pwm output signal. The period and duty cycle of the pwm signal
@@ -68,3 +69,5 @@ module PWMGenerator #(
         end
     end
 endmodule
+
+`endif // _PWMGenerator_

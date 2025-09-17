@@ -1,4 +1,5 @@
-`pragma once
+`ifndef _ResetGenerator_
+`define _ResetGenerator_
 
 /**
  * This utility module will emit a reset signal shortly after power-up.
@@ -23,3 +24,5 @@ module ResetGenerator #(
         else reset_counter <= reset_counter + 1;
     end
 endmodule
+
+`endif // _ResetGenerator_

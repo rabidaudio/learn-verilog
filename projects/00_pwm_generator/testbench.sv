@@ -1,4 +1,5 @@
 `timescale 1ns/100ps
+`include "top.test.sv"
 `include "ResetGenerator.sv"
 `include "PWMGenerator.test.sv"
 
@@ -19,5 +20,5 @@ module testbench;
     ResetGenerator #(.AFTER(1)) reset (.clk(t_clk), .reset(t_reset));
 
     PWMGenerator_Tests tests_pwm(t_clk, t_reset);
-
+    Top_Test tests_top(t_clk);
 endmodule

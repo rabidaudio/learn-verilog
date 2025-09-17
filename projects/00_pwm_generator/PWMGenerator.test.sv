@@ -99,7 +99,7 @@ module PWMGenerator_Test50 (
     );
 
     // assert duty correct
-    logic [2:0] t_duty;
+    logic [3:0] t_duty;
     DutyCounter #(.WINDOW(PERIOD), .ASSERT(1)) duty_counter (
         .t_clk(t_clk), .signal(t_pwm), .g_duty(DUTY), .duty(t_duty)
     );

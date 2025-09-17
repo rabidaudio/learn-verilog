@@ -1,5 +1,6 @@
 // A set of test bench utility modules
-`pragma once
+`ifndef _TestUtils_
+`define _TestUtils_
 
 /**
  * ConstantPWM is a test utility that generates
@@ -106,3 +107,5 @@ module GoldenMonitor #(
         end
     end
 endmodule
+
+`endif // _TestUtils_
