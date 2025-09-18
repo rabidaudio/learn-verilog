@@ -2,6 +2,7 @@
 `include "top.test.sv"
 `include "ResetGenerator.sv"
 `include "PWMGenerator.test.sv"
+`include "BrightnessStepper.test.sv"
 
 module testbench;
     localparam realtime PERIOD = 10;
@@ -20,5 +21,6 @@ module testbench;
     ResetGenerator #(.AFTER(1)) reset (.clk(t_clk), .reset(t_reset));
 
     PWMGenerator_Tests tests_pwm(t_clk, t_reset);
-    Top_Test tests_top(t_clk);
+    BrightnessStepper_Test test_stepper(t_clk, t_reset);
+    Top_Test test_top(t_clk);
 endmodule
