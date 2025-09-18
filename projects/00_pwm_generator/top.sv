@@ -16,6 +16,7 @@ module top #(
     // the period of the timer to use. selected for an integer number < 2^16
     // TODO: compute this?
     parameter IDLE_TIME = 512
+    // TODO: max brightness
 ) (
     input clk,
     output logic [2:0] led_rgb_o
@@ -30,25 +31,33 @@ module top #(
     localparam CLOCK_PERIOD = LED_PERIOD / IDLE_TIME; // 46875
     localparam WIDTH = $clog2(CLOCK_PERIOD)+1;
 
+    // buffers for each color
     logic red;
     logic green;
     logic blue;
 
+    // the value to set to the current led
+    logic result;
+
+    // which led we're currently controlling
+    logic [2:0] which_led;
+
     // brightness params
     logic update_brightness;
     logic [WIDTH-1:0] brightness;
-    logic period_end;
+    logic generator_period_end;
+    logic stepper_period_end;
 
     PWMGenerator #(
         .INITIAL_PERIOD(CLOCK_PERIOD),
         .INITIAL_DUTY(0)
-    ) red_gen (
+    ) generator (
         .clk(clk),
         .reset(reset),
         .update_parameters(update_brightness),
         .pwm_duty_cycle(brightness),
-        .period_end(period_end),
-        .pwm(red)
+        .period_end(generator_period_end),
+        .pwm(result)
     );
 
     BrightnessStepper #(
@@ -57,6 +66,7 @@ module top #(
     ) stepper (
         .clk(clk),
         .reset(reset),
+        .period_end(stepper_period_end),
         .brightness(brightness)
     );
 
@@ -64,12 +74,29 @@ module top #(
         if (reset) begin
             update_brightness <= 0;
             led_rgb_o <= '1;
-            // brightness <= 0;
+
+            red <= 0;
+            green <= 0;
+            blue <= 0;
+            which_led <= 0;
         end else begin
-            led_rgb_o <= {~blue, ~green, ~red}; // active low
-            // update_brightness <= period_end;
-            if (period_end) update_brightness<=1;
+            led_rgb_o = { ~blue, ~green, ~red }; // active low
+
+            red <= red;
+            green <= green;
+            blue <= blue;
+
+            if (which_led == 2) red <= result;
+            else if (which_led == 1) green <= result;
+            else if (which_led == 0) blue <= result;
+
+            // TODO: why are these not equivalent?
+            // update_brightness <= generator_period_end;
+            if (generator_period_end) update_brightness<=1;
             else update_brightness<=0;
+
+            if (stepper_period_end) which_led <= (which_led == 2 ? 0 : which_led + 1);
+            else which_led <= which_led;
         end
     end
 

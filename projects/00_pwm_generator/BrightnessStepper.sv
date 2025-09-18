@@ -11,6 +11,7 @@ module BrightnessStepper #(
 ) (
     input clk,
     input reset,
+    output logic period_end,
     output logic [$clog2(PEAK_BRIGHTNESS):0] brightness
 );
 
@@ -25,6 +26,7 @@ module BrightnessStepper #(
             idle_counter <= IDLE_TIME - 1;
             rising <= 1;
             brightness <= 0;
+            period_end <= 0;
         end else begin
             if (idle_counter == 0) begin
                 idle_counter <= IDLE_TIME-1;
@@ -32,14 +34,18 @@ module BrightnessStepper #(
                 if (brightness == 0) begin
                     rising <= 1;
                     brightness <= 1;
+                    period_end <= 1;
                 end else if (brightness == PEAK_BRIGHTNESS) begin
                     rising <= 0;
                     brightness <= PEAK_BRIGHTNESS -1;
+                    period_end <= 1;
                 end else begin
                     brightness <= rising ? brightness + 1 : brightness - 1;
+                    period_end <= 0;
                 end
             end else begin
                 idle_counter <= idle_counter - 1;
+                period_end <= 0;
             end
         end
     end
