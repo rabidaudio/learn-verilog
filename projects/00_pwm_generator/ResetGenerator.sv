@@ -13,15 +13,14 @@ module ResetGenerator #(
     output logic reset
 );
     logic [15:0] reset_counter;
-    initial reset_counter = 1;
-    initial reset = 0;
+    initial reset_counter = AFTER;
+    initial reset = 1;
 
     always_ff @(posedge clk) begin
-        if (reset_counter == AFTER) begin
-            reset <= 1;
+        if (reset_counter == 0) begin
+            reset <= 0;
             reset_counter <= 0;
-        end else if (reset_counter == 0) reset <= 0;
-        else reset_counter <= reset_counter + 1;
+        end else reset_counter <= reset_counter - 1;
     end
 endmodule
 
