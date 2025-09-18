@@ -2,7 +2,7 @@
 `include "PWMGenerator.sv"
 `include "BrightnessStepper.sv"
 
-typedef enum { RISING_GREEN, FALLING_RED, RISING_BLUE, FALLING_GREEN, RISING_RED, FALLING_BLUE } hue_state_e;
+typedef enum { RISING_GREEN=0, FALLING_RED = 1, RISING_BLUE = 2, FALLING_GREEN = 3, RISING_RED =4, FALLING_BLUE=5 } hue_state_e;
 
 /**
  * This module brightens and dims an LED using PWM.
@@ -81,7 +81,7 @@ module top #(
             green <= 0;
             blue <= 0;
             // which_led <= 2;
-            hue_state <= RISING_GREEN;
+            hue_state <= FALLING_BLUE;
         end else begin
             // red <= red;
             // green <= green;
@@ -94,12 +94,12 @@ module top #(
             case (hue_state)
                 RISING_GREEN: begin
                     red <= 1;
-                    green <= ~result; // TODO: why invert????
+                    green <= result;
                     blue <= 0;
                 end
 
                 FALLING_RED: begin
-                    red <= ~result;
+                    red <= result;
                     green <= 1;
                     blue <= 0;
                 end
@@ -107,17 +107,17 @@ module top #(
                 RISING_BLUE: begin
                     red <= 0;
                     green <= 1;
-                    blue <= ~result;
+                    blue <= result;
                 end
 
                 FALLING_GREEN: begin
                     red <= 0;
-                    green <= ~result;
+                    green <= result;
                     blue <= 1;
                 end
 
                 RISING_RED: begin
-                    red <= ~result;
+                    red <= result;
                     green <= 0;
                     blue <= 1;
                 end
@@ -125,7 +125,7 @@ module top #(
                 FALLING_BLUE: begin
                     red <= 1;
                     green <= 0;
-                    blue <= ~result;
+                    blue <= result;
                 end
             endcase
 
