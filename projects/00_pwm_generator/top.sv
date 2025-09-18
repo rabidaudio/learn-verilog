@@ -2,6 +2,8 @@
 `include "PWMGenerator.sv"
 `include "BrightnessStepper.sv"
 
+typedef enum { RISING_GREEN, FALLING_RED, RISING_BLUE, FALLING_GREEN, RISING_RED, FALLING_BLUE } hue_state_e;
+
 /**
  * This module brightens and dims an LED using PWM.
  * It increases and decreases the LED's intensity over a period of 2 seconds. The LED will
@@ -39,8 +41,9 @@ module top #(
     // the value to set to the current led
     logic result;
 
-    // which led we're currently controlling
-    logic [2:0] which_led;
+    // state machine for hue
+    hue_state_e hue_state;
+    // logic which_led;
 
     // brightness params
     logic update_brightness;
@@ -74,10 +77,11 @@ module top #(
         if (reset) begin
             update_brightness <= 0;
             led_rgb_o <= '1;
-            red <= 1;
+            red <= 0;
             green <= 0;
             blue <= 0;
-            which_led <= 2;
+            // which_led <= 2;
+            hue_state <= RISING_GREEN;
         end else begin
             // red <= red;
             // green <= green;
@@ -87,22 +91,52 @@ module top #(
             // else if (which_led == 0) green <= result;
             // else if (which_led == 2) blue <= result;
 
-            if (which_led == 1) red <= result;
-            else red <= red;
+            case (hue_state)
+                RISING_GREEN: begin
+                    red <= 1;
+                    green <= ~result; // TODO: why invert????
+                    blue <= 0;
+                end
 
-            if (which_led == 0) green <= result;
-            else green <= green;
+                FALLING_RED: begin
+                    red <= ~result;
+                    green <= 1;
+                    blue <= 0;
+                end
+                
+                RISING_BLUE: begin
+                    red <= 0;
+                    green <= 1;
+                    blue <= ~result;
+                end
 
-            if (which_led == 2) blue <= result;
-            else blue <= blue;
+                FALLING_GREEN: begin
+                    red <= 0;
+                    green <= ~result;
+                    blue <= 1;
+                end
+
+                RISING_RED: begin
+                    red <= ~result;
+                    green <= 0;
+                    blue <= 1;
+                end
+
+                FALLING_BLUE: begin
+                    red <= 1;
+                    green <= 0;
+                    blue <= ~result;
+                end
+            endcase
 
             // TODO: why are these not equivalent?
             // update_brightness <= generator_period_end;
             if (generator_period_end) update_brightness <= 1;
             else update_brightness <= 0;
 
-            if (stepper_period_end) which_led <= (which_led == 2 ? 0 : which_led + 1);
-            else which_led <= which_led;
+            // if (stepper_period_end) which_led <= (which_led == 2 ? 0 : which_led + 1);
+            // else which_led <= which_led;
+            if (stepper_period_end) hue_state <= (hue_state == FALLING_BLUE ? RISING_GREEN : hue_state+1);
 
             led_rgb_o = { ~blue, ~green, ~red }; // active low
         end
