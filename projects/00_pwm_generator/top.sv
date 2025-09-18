@@ -50,26 +50,6 @@ module top #(
         .period_end(period_end),
         .pwm(red)
     );
-    // PWMGenerator #(
-    //     .INITIAL_PERIOD(CLOCK_PERIOD),
-    //     .INITIAL_DUTY(0)
-    // ) green_gen (
-    //     .clk(clk),
-    //     .reset(reset),
-    //     .update_parameters(update_brightness),
-    //     .pwm_duty_cycle(brightness),
-    //     .pwm(green)
-    // );
-    // PWMGenerator #(
-    //     .INITIAL_PERIOD(CLOCK_PERIOD),
-    //     .INITIAL_DUTY(0)
-    // ) blue_gen (
-    //     .clk(clk),
-    //     .reset(reset),
-    //     .update_parameters(update_brightness),
-    //     .pwm_duty_cycle(brightness),
-    //     .pwm(blue)
-    // );
 
     BrightnessStepper #(
         .IDLE_TIME(IDLE_TIME),
@@ -86,7 +66,7 @@ module top #(
             led_rgb_o <= '1;
             // brightness <= 0;
         end else begin
-            led_rgb_o <= {~red, ~green, ~blue}; // active low
+            led_rgb_o <= {~blue, ~green, ~red}; // active low
             // update_brightness <= period_end;
             if (period_end) update_brightness<=1;
             else update_brightness<=0;
