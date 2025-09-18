@@ -12,7 +12,10 @@
  */
 module top #(
     parameter RESET_DELAY = 'hFFFF,
-    parameter CLOCK_SPEED = 12*1000*1000 // 12Mhz
+    parameter CLOCK_SPEED = 12*1000*1000, // 12Mhz
+    // the period of the timer to use. selected for an integer number < 2^16
+    // TODO: compute this?
+    parameter STEPS = 512
 ) (
     input clk,
     output logic [2:0] led_rgb_o
@@ -24,10 +27,6 @@ module top #(
     );
     // the number of clock cycles to fully brighten/dim the LED
     localparam LED_PERIOD = 2*CLOCK_SPEED; // 2 seconds
-    
-    // the period of the timer to use. selected for an integer number < 2^16
-    // TODO: compute this?
-    localparam STEPS = 512;
     localparam CLOCK_PERIOD = LED_PERIOD / STEPS; // 46875
     localparam WIDTH = $clog2(CLOCK_PERIOD)+1;
 
@@ -51,41 +50,49 @@ module top #(
         .period_end(period_end),
         .pwm(red)
     );
-    PWMGenerator #(
-        .INITIAL_PERIOD(CLOCK_PERIOD),
-        .INITIAL_DUTY(0)
-    ) green_gen (
-        .clk(clk),
-        .reset(reset),
-        .update_parameters(update_brightness),
-        .pwm_duty_cycle(brightness),
-        .pwm(green)
-    );
-    PWMGenerator #(
-        .INITIAL_PERIOD(CLOCK_PERIOD),
-        .INITIAL_DUTY(0)
-    ) blue_gen (
-        .clk(clk),
-        .reset(reset),
-        .update_parameters(update_brightness),
-        .pwm_duty_cycle(brightness),
-        .pwm(blue)
-    );
+    // PWMGenerator #(
+    //     .INITIAL_PERIOD(CLOCK_PERIOD),
+    //     .INITIAL_DUTY(0)
+    // ) green_gen (
+    //     .clk(clk),
+    //     .reset(reset),
+    //     .update_parameters(update_brightness),
+    //     .pwm_duty_cycle(brightness),
+    //     .pwm(green)
+    // );
+    // PWMGenerator #(
+    //     .INITIAL_PERIOD(CLOCK_PERIOD),
+    //     .INITIAL_DUTY(0)
+    // ) blue_gen (
+    //     .clk(clk),
+    //     .reset(reset),
+    //     .update_parameters(update_brightness),
+    //     .pwm_duty_cycle(brightness),
+    //     .pwm(blue)
+    // );
 
-    BrightnessStepper #(
-        .STEPS(STEPS),
-        .WIDTH(WIDTH)
-    ) stepper (
-        .clk(period_end),
-        .reset(reset),
-        .brightness(brightness)
-    );
+    // BrightnessStepper #(
+    //     .STEPS(LED_PERIOD)
+    // ) stepper (
+    //     .clk(clk),
+    //     .reset(reset),
+    //     .brightness(brightness)
+    // );
 
     always_ff @(posedge clk) begin
         if (reset) begin
+            update_brightness <= 0;
             led_rgb_o <= 0;
+
+            brightness <= 0;
         end else begin
             led_rgb_o <= {red, green, blue};
+            // update_brightness <= period_end;
+            
+            if (period_end) begin
+                brightness <= brightness + 1;
+                update_brightness <= period_end;
+            end
         end
     end
 
