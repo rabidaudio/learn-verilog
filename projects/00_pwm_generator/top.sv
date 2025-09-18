@@ -74,21 +74,27 @@ module top #(
         if (reset) begin
             update_brightness <= 0;
             led_rgb_o <= '1;
-
             red <= 1;
             green <= 0;
             blue <= 0;
             which_led <= 2;
         end else begin
-            led_rgb_o = { ~blue, ~green, ~red }; // active low
+            // red <= red;
+            // green <= green;
+            // blue <= blue;
 
-            red <= red;
-            green <= green;
-            blue <= blue;
+            // if (which_led == 1) red <= result;
+            // else if (which_led == 0) green <= result;
+            // else if (which_led == 2) blue <= result;
 
             if (which_led == 1) red <= result;
-            else if (which_led == 0) green <= result;
-            else if (which_led == 2) blue <= result;
+            else red <= red;
+
+            if (which_led == 0) green <= result;
+            else green <= green;
+
+            if (which_led == 2) blue <= result;
+            else blue <= blue;
 
             // TODO: why are these not equivalent?
             // update_brightness <= generator_period_end;
@@ -97,6 +103,8 @@ module top #(
 
             if (stepper_period_end) which_led <= (which_led == 2 ? 0 : which_led + 1);
             else which_led <= which_led;
+
+            led_rgb_o = { ~blue, ~green, ~red }; // active low
         end
     end
 
