@@ -7,7 +7,7 @@ module BrightnessStepper_Test (
     localparam IDLE_TIME = 16;
     localparam PEAK_BRIGHTNESS = 15;
 
-    logic [3:0] t_brightness;
+    logic [4:0] t_brightness;
 
     BrightnessStepper #(
         .IDLE_TIME(IDLE_TIME),
@@ -18,7 +18,7 @@ module BrightnessStepper_Test (
         .brightness(t_brightness)
     );
 
-    logic [3:0] g_brightness;
+    logic [4:0] g_brightness;
     initial begin
         repeat(2) @(posedge t_clk);
         g_brightness <= 0;
@@ -35,7 +35,7 @@ module BrightnessStepper_Test (
             end
         end
     end
-    GoldenMonitor #(.WIDTH(4), .DELAY(0)) gm_brightness (
+    GoldenMonitor #(.WIDTH(5), .DELAY(0)) gm_brightness (
         .clk(t_clk),
         .enable('1),
         .golden(g_brightness),

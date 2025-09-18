@@ -11,7 +11,7 @@ module BrightnessStepper #(
 ) (
     input clk,
     input reset,
-    output logic [($clog2(PEAK_BRIGHTNESS)-1):0] brightness
+    output logic [$clog2(PEAK_BRIGHTNESS):0] brightness
 );
 
     // counts down to zero to inc/dec brightness
