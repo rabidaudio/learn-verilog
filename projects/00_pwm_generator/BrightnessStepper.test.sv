@@ -21,18 +21,20 @@ module BrightnessStepper_Test (
     logic [4:0] g_brightness;
     initial begin
         repeat(2) @(posedge t_clk);
-        g_brightness <= 0;
+        g_brightness <= 1;
 
         // NOTE: brightness should spend exactly 1 step cycle at each bound (0, xF)
         while (1) begin
-            for (int i = 0; i < PEAK_BRIGHTNESS; i++) begin
+            for (int i = 0; i < PEAK_BRIGHTNESS-1; i++) begin
                 repeat (IDLE_TIME) @(posedge t_clk);
                 g_brightness <= g_brightness + 1;
             end
-            for (int i = PEAK_BRIGHTNESS; i > 0; i--) begin
+            for (int i = 0; i < PEAK_BRIGHTNESS; i++) begin
                 repeat (IDLE_TIME) @(posedge t_clk);
                 g_brightness <= g_brightness - 1;
             end
+            repeat (IDLE_TIME) @(posedge t_clk);
+            g_brightness <= 1;
         end
     end
     GoldenMonitor #(.WIDTH(5), .DELAY(0)) gm_brightness (

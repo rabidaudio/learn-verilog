@@ -50,6 +50,7 @@ module PWMGenerator #(
             next_duty_cycle <= INITIAL_DUTY;
             period_counter <= INITIAL_PERIOD-1;
             high_counter <= INITIAL_DUTY;
+            pwm <= 0;
         end else begin
             if (update_parameters) begin
                 // TODO: allow changing period

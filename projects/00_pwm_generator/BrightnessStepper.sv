@@ -25,8 +25,8 @@ module BrightnessStepper #(
         if (reset) begin
             idle_counter <= IDLE_TIME - 1;
             rising <= 1;
-            brightness <= 0;
-            period_end <= 0;
+            brightness <= 1;
+            period_end <= 1;
         end else begin
             if (idle_counter == 0) begin
                 idle_counter <= IDLE_TIME-1;
