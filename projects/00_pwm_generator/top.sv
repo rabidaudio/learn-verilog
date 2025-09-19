@@ -43,7 +43,6 @@ module top #(
 
     // state machine for hue
     hue_state_e hue_state;
-    // logic which_led;
 
     // brightness params
     logic update_brightness;
@@ -76,21 +75,11 @@ module top #(
     always_ff @(posedge clk) begin
         if (reset) begin
             update_brightness <= 0;
-            led_rgb_o <= '1;
             red <= 0;
             green <= 0;
             blue <= 0;
-            // which_led <= 2;
             hue_state <= FALLING_BLUE;
         end else begin
-            // red <= red;
-            // green <= green;
-            // blue <= blue;
-
-            // if (which_led == 1) red <= result;
-            // else if (which_led == 0) green <= result;
-            // else if (which_led == 2) blue <= result;
-
             case (hue_state)
                 RISING_GREEN: begin
                     red <= 1;
@@ -129,17 +118,12 @@ module top #(
                 end
             endcase
 
-            // TODO: why are these not equivalent?
-            // update_brightness <= generator_period_end;
-            if (generator_period_end) update_brightness <= 1;
-            else update_brightness <= 0;
+            update_brightness <= generator_period_end;
 
-            // if (stepper_period_end) which_led <= (which_led == 2 ? 0 : which_led + 1);
-            // else which_led <= which_led;
             if (stepper_period_end) hue_state <= (hue_state == FALLING_BLUE ? RISING_GREEN : hue_state+1);
-
-            led_rgb_o = { ~blue, ~green, ~red }; // active low
         end
     end
+
+    always_comb led_rgb_o = { ~blue, ~green, ~red }; // active low
 
 endmodule
